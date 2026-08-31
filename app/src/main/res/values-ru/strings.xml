@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App & Auth -->
+    <string name="app_name">Keep NC</string>
+    <string name="login_title">Keep NC</string>
+    <string name="login_subtitle">Клиент Nextcloud Заметок</string>
+    <string name="login_server_url_hint">https://your.nextcloud.server</string>
+    <string name="login_button">Войти через Nextcloud</string>
+    <string name="login_waiting">Ожидание авторизации в браузере…</string>
+    <string name="login_error_empty_url">Пожалуйста, введите адрес сервера</string>
+    <string name="login_error_invalid_url">Адрес должен начинаться с https://</string>
+    <string name="login_error_timeout">Время ожидания авторизации истекло. Попробуйте снова.</string>
+
+    <!-- Notes List & Drawer -->
+    <string name="notes_all">Все заметки</string>
+    <string name="notes_favorites">Избранное</string>
+    <string name="notes_empty">Заметок пока нет.\nНажмите +, чтобы создать.</string>
+    <string name="notes_empty_search">Ничего не найдено.</string>
+    <string name="notes_empty_category">В этой категории нет заметок.</string>
+    <string name="notes_empty_favorites">Нет избранных заметок.</string>
+    <string name="notes_search_hint">Поиск заметок…</string>
+    <string name="notes_categories">Категории</string>
+
+    <!-- Editor -->
+    <string name="editor_title_label">Название заметки</string>
+    <string name="editor_title_hint">Заголовок</string>
+    <string name="editor_content_hint">Заметка…</string>
+    <string name="editor_category_hint">Категория</string>
+    <string name="editor_add_category">+ Категория</string>
+    <string name="editor_preview">Просмотр</string>
+    <string name="editor_edit">Редактировать</string>
+    <string name="editor_favorite">Избранное</string>
+    <string name="editor_note_not_found">Заметка не найдена</string>
+
+    <!-- Category Picker -->
+    <string name="category_picker_title">Категория заметки</string>
+    <string name="category_picker_new_hint">Создать категорию…</string>
+    <string name="category_picker_create">Создать «%1$s»</string>
+    <string name="category_none">Без категории</string>
+
+    <!-- Actions -->
+    <string name="action_logout">Выйти</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_sync">Синхронизировать</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_discard">Не сохранять</string>
+    <string name="confirm">Удалить</string>
+    <string name="cancel">Отмена</string>
+
+    <!-- Dialogs -->
+    <string name="delete_note_title">Удалить заметку?</string>
+    <string name="delete_note_message">Эта заметка будет удалена навсегда.</string>
+
+    <string name="save_changes_title">Сохранить изменения?</string>
+    <string name="save_changes_message">В этой заметке есть несохранённые изменения.</string>
+
+    <string name="logout_title">Выйти из аккаунта?</string>
+    <string name="logout_message">Вы выйдете из аккаунта Nextcloud. Несинхронизированные локальные заметки будут удалены.</string>
+
+    <!-- Sync & Status -->
+    <string name="sync_started">Синхронизация…</string>
+    <string name="sync_success">Синхронизация завершена</string>
+    <string name="sync_error">Ошибка синхронизации. Проверьте подключение.</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Что-то пошло не так. Пожалуйста, попробуйте снова.</string>
+    <string name="error_network">Нет подключения к интернету</string>
+
+    <!-- Editor Bottom Actions -->
+    <string name="editor_toggle_checkboxes">Флажки</string>
+    <string name="editor_more_actions">Ещё</string>
+    <string name="editor_action_show_checkboxes">Сделать список</string>
+    <string name="editor_action_hide_checkboxes">Обычный текст</string>
+    <string name="editor_action_category">Категория</string>
+    <string name="editor_action_delete_note">Удалить заметку</string>
+</resources>

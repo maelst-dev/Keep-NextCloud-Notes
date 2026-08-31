@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Nextcloud Blue Material 3 palette — seed #0082C9 -->
+
+    <!-- Light theme roles -->
+    <color name="md_theme_light_primary">#0062A2</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#CEE5FF</color>
+    <color name="md_theme_light_onPrimaryContainer">#001D36</color>
+    <color name="md_theme_light_secondary">#4E616D</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#D1E5F4</color>
+    <color name="md_theme_light_onSecondaryContainer">#0A1E28</color>
+    <color name="md_theme_light_tertiary">#5B5D7E</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#E2E0FF</color>
+    <color name="md_theme_light_onTertiaryContainer">#181A3B</color>
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
+    <color name="md_theme_light_background">#FAFCFF</color>
+    <color name="md_theme_light_onBackground">#191C1F</color>
+    <color name="md_theme_light_surface">#FAFCFF</color>
+    <color name="md_theme_light_onSurface">#191C1F</color>
+    <color name="md_theme_light_surfaceVariant">#DDE3EA</color>
+    <color name="md_theme_light_onSurfaceVariant">#41484F</color>
+    <color name="md_theme_light_outline">#71787F</color>
+    <color name="md_theme_light_outlineVariant">#C1C7CE</color>
+    <color name="md_theme_light_inverseSurface">#2E3133</color>
+    <color name="md_theme_light_inverseOnSurface">#F0F1F3</color>
+    <color name="md_theme_light_inversePrimary">#97CBFF</color>
+
+    <!-- Dark theme roles -->
+    <color name="md_theme_dark_primary">#97CBFF</color>
+    <color name="md_theme_dark_onPrimary">#003354</color>
+    <color name="md_theme_dark_primaryContainer">#004A78</color>
+    <color name="md_theme_dark_onPrimaryContainer">#CEE5FF</color>
+    <color name="md_theme_dark_secondary">#B5CAD8</color>
+    <color name="md_theme_dark_onSecondary">#1F3240</color>
+    <color name="md_theme_dark_secondaryContainer">#364A57</color>
+    <color name="md_theme_dark_onSecondaryContainer">#D1E5F4</color>
+    <color name="md_theme_dark_tertiary">#C5C4EB</color>
+    <color name="md_theme_dark_onTertiary">#2E2F51</color>
+    <color name="md_theme_dark_tertiaryContainer">#454568</color>
+    <color name="md_theme_dark_onTertiaryContainer">#E2E0FF</color>
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
+    <color name="md_theme_dark_background">#191C1F</color>
+    <color name="md_theme_dark_onBackground">#E1E2E5</color>
+    <color name="md_theme_dark_surface">#191C1F</color>
+    <color name="md_theme_dark_onSurface">#E1E2E5</color>
+    <color name="md_theme_dark_surfaceVariant">#41484F</color>
+    <color name="md_theme_dark_onSurfaceVariant">#C1C7CE</color>
+    <color name="md_theme_dark_outline">#8B9198</color>
+    <color name="md_theme_dark_outlineVariant">#41484F</color>
+    <color name="md_theme_dark_inverseSurface">#E1E2E5</color>
+    <color name="md_theme_dark_inverseOnSurface">#2E3133</color>
+    <color name="md_theme_dark_inversePrimary">#0062A2</color>
+
+    <!-- Nextcloud blue used directly in custom drawables/spans -->
+    <color name="nextcloud_blue">#0082C9</color>
+</resources>

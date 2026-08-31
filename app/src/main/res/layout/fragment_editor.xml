@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Loading spinner (shown while note loads from Room) -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Editor content — hidden during loading -->
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/content_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="row_category, scroll_content" />
+
+    <!-- Note title container (label + input) — GONE by default; shown in Edit mode, hidden in Preview
+         (title is displayed in the ActionBar when in Preview mode) -->
+    <LinearLayout
+        android:id="@+id/title_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tv_title_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/editor_title_label"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorPrimary"
+            android:letterSpacing="0.03" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/editor_title_hint"
+            android:textAppearance="?attr/textAppearanceTitleLarge"
+            android:background="@null"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:imeOptions="actionNext"
+            android:inputType="textCapSentences|textMultiLine" />
+
+    </LinearLayout>
+
+    <!-- Category Chip Row -->
+    <LinearLayout
+        android:id="@+id/row_category"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintTop_toBottomOf="@id/title_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_category"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/editor_add_category"
+            app:chipIcon="@drawable/ic_category"
+            app:chipIconTint="?attr/colorPrimary"
+            app:chipStrokeWidth="0.5dp"
+            app:chipStrokeColor="?attr/colorOutlineVariant"
+            app:chipCornerRadius="4dp" />
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutline"
+        android:alpha="0.3"
+        app:layout_constraintTop_toBottomOf="@id/row_category"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Scrollable container for Content EditText (Edit mode) -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <EditText
+            android:id="@+id/et_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/editor_content_hint"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:lineSpacingExtra="4dp"
+            android:background="@null"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="88dp"
+            android:gravity="top"
+            android:inputType="textCapSentences|textMultiLine" />
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Scrollable container for Preview TextView (Preview mode) -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_preview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tv_preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="?attr/colorOnSurface"
+            android:lineSpacingExtra="6dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="88dp" />
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Left: Favorite Toggle FAB -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_favorite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/editor_favorite"
+        app:srcCompat="@drawable/ic_star_outline"
+        app:tint="?attr/colorOnSurfaceVariant"
+        app:backgroundTint="?attr/colorSurfaceContainerHigh"
+        app:elevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Bottom Right: Overflow Actions Menu FAB (3 dots) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/editor_more_actions"
+        app:srcCompat="@drawable/ic_more_vert"
+        app:tint="?attr/colorOnSurfaceVariant"
+        app:backgroundTint="?attr/colorSurfaceContainerHigh"
+        app:elevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Bottom Right: Preview/Edit Mode Toggle FAB (left of fab_more) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/editor_preview"
+        app:srcCompat="@drawable/ic_preview"
+        app:tint="?attr/colorOnSurfaceVariant"
+        app:backgroundTint="?attr/colorSurfaceContainerHigh"
+        app:elevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/fab_more" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

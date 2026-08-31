@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App & Auth -->
+    <string name="app_name">Keep NC</string>
+    <string name="login_title">Keep NC</string>
+    <string name="login_subtitle">Nextcloud Notes Client</string>
+    <string name="login_server_url_hint">https://your.nextcloud.server</string>
+    <string name="login_button">Login with Nextcloud</string>
+    <string name="login_waiting">Waiting for authorization in browser…</string>
+    <string name="login_error_empty_url">Please enter your server URL</string>
+    <string name="login_error_invalid_url">Please enter a valid URL starting with https://</string>
+    <string name="login_error_timeout">Login timed out. Please try again.</string>
+
+    <!-- Notes List & Drawer -->
+    <string name="notes_all">All Notes</string>
+    <string name="notes_favorites">Favorites</string>
+    <string name="notes_empty">No notes yet.\nTap + to create one.</string>
+    <string name="notes_empty_search">No notes match your search.</string>
+    <string name="notes_empty_category">No notes in this category.</string>
+    <string name="notes_empty_favorites">No pinned notes yet.</string>
+    <string name="notes_search_hint">Search notes…</string>
+    <string name="notes_categories">Categories</string>
+
+    <!-- Editor -->
+    <string name="editor_title_label">Note title</string>
+    <string name="editor_title_hint">Title</string>
+    <string name="editor_content_hint">Note…</string>
+    <string name="editor_category_hint">Category</string>
+    <string name="editor_add_category">+ Category</string>
+    <string name="editor_preview">Preview</string>
+    <string name="editor_edit">Edit</string>
+    <string name="editor_favorite">Favorite</string>
+    <string name="editor_note_not_found">Note not found</string>
+
+    <!-- Category Picker -->
+    <string name="category_picker_title">Note category</string>
+    <string name="category_picker_new_hint">Create category…</string>
+    <string name="category_picker_create">Create \"%1$s\"</string>
+    <string name="category_none">No category</string>
+
+    <!-- Actions -->
+    <string name="action_logout">Logout</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_sync">Sync</string>
+    <string name="action_save">Save</string>
+    <string name="action_discard">Discard</string>
+    <string name="confirm">Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Dialogs -->
+    <string name="delete_note_title">Delete note?</string>
+    <string name="delete_note_message">This note will be deleted permanently.</string>
+
+    <string name="save_changes_title">Save changes?</string>
+    <string name="save_changes_message">You have unsaved changes in this note.</string>
+
+    <string name="logout_title">Logout?</string>
+    <string name="logout_message">You will be logged out of your Nextcloud account. Local unsynced notes will be lost.</string>
+
+    <!-- Sync & Status -->
+    <string name="sync_started">Syncing…</string>
+    <string name="sync_success">Sync complete</string>
+    <string name="sync_error">Sync failed. Check connection.</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_network">No internet connection</string>
+
+    <!-- Editor Bottom Actions -->
+    <string name="editor_toggle_checkboxes">Checkboxes</string>
+    <string name="editor_more_actions">More options</string>
+    <string name="editor_action_show_checkboxes">Make checklist</string>
+    <string name="editor_action_hide_checkboxes">Plain text</string>
+    <string name="editor_action_category">Category</string>
+    <string name="editor_action_delete_note">Delete note</string>
+</resources>

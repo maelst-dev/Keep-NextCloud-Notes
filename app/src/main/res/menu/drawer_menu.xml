@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fixed items -->
+    <group android:id="@+id/group_main" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_all_notes"
+            android:icon="@drawable/ic_notes"
+            android:title="@string/notes_all"
+            android:checked="true" />
+
+        <item
+            android:id="@+id/nav_favorites"
+            android:icon="@drawable/ic_star_outline"
+            android:title="@string/notes_favorites" />
+    </group>
+
+    <!-- Dynamic category items are added programmatically in MainActivity
+         using group id = R.id.group_categories -->
+    <group android:id="@+id/group_categories" />
+
+    <!-- Bottom actions -->
+    <group android:id="@+id/group_actions">
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/ic_logout"
+            android:title="@string/action_logout" />
+    </group>
+
+</menu>

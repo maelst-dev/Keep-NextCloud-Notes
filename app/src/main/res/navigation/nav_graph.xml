@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/notesFragment">
+
+    <fragment
+        android:id="@+id/notesFragment"
+        android:name="com.keepnc.ui.notes.NotesFragment"
+        android:label="Keep NC">
+
+        <action
+            android:id="@+id/action_notesFragment_to_editorFragment"
+            app:destination="@id/editorFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/editorFragment"
+        android:name="com.keepnc.ui.editor.EditorFragment"
+        android:label=" ">
+
+        <argument
+            android:name="note_id"
+            app:argType="long"
+            android:defaultValue="-1L" />
+
+    </fragment>
+
+</navigation>
