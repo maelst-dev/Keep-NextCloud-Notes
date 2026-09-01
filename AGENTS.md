@@ -125,14 +125,15 @@ app/src/main/
 
 ---
 
-## Build & Test Commands (Windows Environment)
+## Build & Test Commands
 
-On this Windows development environment, `grep` is not in PATH (use `Get-ChildItem -Recurse | Select-String` or `view_file`). Java and Gradle must be run pointing to Android Studio's JBR and Gradle dists:
+Use standard Gradle wrapper commands:
 
 ```powershell
 # Run Unit Tests
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; & "C:\Users\Sabirzjanov\.gradle\wrapper\dists\gradle-8.11.1-bin\bpt9gzteqjrbo1mjrsomdt32c\gradle-8.11.1\bin\gradle.bat" testDebugUnitTest
+.\gradlew testDebugUnitTest
 
 # Assemble Debug APK
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; & "C:\Users\Sabirzjanov\.gradle\wrapper\dists\gradle-8.11.1-bin\bpt9gzteqjrbo1mjrsomdt32c\gradle-8.11.1\bin\gradle.bat" assembleDebug
+.\gradlew assembleDebug
 ```
+

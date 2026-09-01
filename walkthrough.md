@@ -53,7 +53,7 @@ keep.nc.local/
 > Android Studio сделает это автоматически при открытии проекта через **File → Open**.
 
 1. Открой **Android Studio** (Hedgehog / Iguana / Ladybug или новее)
-2. **File → Open** → выбери папку `D:\OSPanel-651\home\keep.nc.local`
+2. **File → Open** → выбери корневую папку проекта
 3. Дождись синхронизации Gradle (первый раз скачает ~500 МБ зависимостей)
 4. **Build → Make Project** (`Ctrl+F9`) — должно собраться без ошибок
 5. Запусти на эмуляторе API 28+ или реальном устройстве
