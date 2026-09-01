@@ -58,15 +58,11 @@ class LargeTaskCheckboxDrawable(
         val b = bounds
         val boxLeft = b.left.toFloat()
 
-        // Account for lineSpacingExtra at the bottom of the line (6dp in tv_preview)
-        // so the checkbox centers with the text line itself rather than the bottom padding
-        val lineSpacing = 6f * density
-        val textHeight = if (b.height() > sizePx + lineSpacing) {
-            b.height() - lineSpacing
-        } else {
-            b.height().toFloat()
-        }
-        val boxTop = b.top.toFloat() + ((textHeight - sizePx) / 2f).coerceAtLeast(0f)
+        // b.top is computed by Markwon's TaskListSpan as (lineTop + (lineHeight - sizePx) / 2).
+        // Since tv_preview has lineSpacingExtra (which adds extra spacing at the bottom of each line),
+        // we shift the box slightly up (-1.5dp) to match the visual text baseline perfectly across all devices.
+        val lineSpacingCorrection = 1.5f * density
+        val boxTop = b.top.toFloat() - lineSpacingCorrection
         val boxRight = boxLeft + sizePx
         val boxBottom = boxTop + sizePx
 
