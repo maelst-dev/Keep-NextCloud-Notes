@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App & Auth -->
-    <string name="app_name">Keep NC</string>
-    <string name="login_title">Keep NC</string>
+    <string name="app_name">KeepNotes for Nextcloud</string>
+    <string name="login_title">KeepNotes for Nextcloud</string>
     <string name="login_subtitle">Nextcloud Notes Client</string>
     <string name="login_server_url_hint">https://your.nextcloud.server</string>
     <string name="login_button">Login with Nextcloud</string>

@@ -1,4 +1,4 @@
-﻿# Keep NC (Nextcloud Notes Android Client)
+# KeepNotes for Nextcloud (Android Client)
 
 [English](#english) | [Русский](#русский)
 
@@ -7,7 +7,7 @@
 <a name="русский"></a>
 ## 🇷🇺 Русский
 
-**Keep NC** — Android-клиент для [Nextcloud Notes](https://apps.nextcloud.com/apps/notes) с интерфейсом и пользовательским опытом в стиле **Google Keep** (сетка заметок, тема Material 3, интерактивные чек-листы, категории, полнофункциональный офлайн-режим с двусторонней синхронизацией).
+**KeepNotes for Nextcloud** — Android-клиент для [Nextcloud Notes](https://apps.nextcloud.com/apps/notes) с интерфейсом и пользовательским опытом в стиле **Google Keep** (сетка заметок, тема Material 3, интерактивные чек-листы, категории, полнофункциональный офлайн-режим с двусторонней синхронизацией).
 
 ### ✨ Основные возможности
 
@@ -46,7 +46,7 @@
 
 1. **Клонирование репозитория**:
    ```bash
-   git clone https://github.com/maelst-dev/Keep-NextCloud-Notes.git
+   git clone https://github.com/maelst-dev/KeepNotes-for-Nextcloud.git
    ```
 
 2. **Открытие в Android Studio**:
@@ -63,7 +63,7 @@
 <a name="english"></a>
 ## 🇬🇧 English
 
-**Keep NC** is an Android client for [Nextcloud Notes](https://apps.nextcloud.com/apps/notes) featuring a **Google Keep-inspired** UI and UX (staggered card grid, Material 3 theming, interactive checklists, categories, offline-first bidirectional sync).
+**KeepNotes for Nextcloud** is an Android client for [Nextcloud Notes](https://apps.nextcloud.com/apps/notes) featuring a **Google Keep-inspired** UI and UX (staggered card grid, Material 3 theming, interactive checklists, categories, offline-first bidirectional sync).
 
 ### ✨ Features
 
@@ -102,7 +102,7 @@
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/maelst-dev/Keep-NextCloud-Notes.git
+   git clone https://github.com/maelst-dev/KeepNotes-for-Nextcloud.git
    ```
 
 2. **Open in Android Studio**:
