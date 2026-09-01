@@ -72,7 +72,12 @@ class EditorFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditorBinding.inflate(inflater, container, false)
-        isPreviewMode = savedInstanceState?.getBoolean(KEY_PREVIEW_MODE, false) ?: false
+        if (savedInstanceState != null) {
+            isPreviewMode = savedInstanceState.getBoolean(KEY_PREVIEW_MODE, false)
+        } else {
+            val noteId = arguments?.getLong("note_id", -1L) ?: -1L
+            isPreviewMode = (noteId != -1L)
+        }
         return binding.root
     }
 
@@ -89,7 +94,7 @@ class EditorFragment : Fragment() {
         observeUiState()
         observeCategory()
         observeFavorite()
-        observeFieldsOnce(isExistingNote = noteId != -1L)
+        observeFieldsOnce()
         setupBackHandler()
     }
 
@@ -289,7 +294,11 @@ class EditorFragment : Fragment() {
     // =========================================================================
 
     private fun togglePreviewMode() {
-        isPreviewMode = !isPreviewMode
+        applyMode(!isPreviewMode)
+    }
+
+    private fun applyMode(preview: Boolean) {
+        isPreviewMode = preview
         if (isPreviewMode) {
             // --- Switch to Preview ---
             // Clean empty checklist lines when switching to Preview mode
@@ -314,7 +323,6 @@ class EditorFragment : Fragment() {
             renderMarkdownWithLargeCheckboxes(contentToRender)
 
             binding.titleContainer.visibility = View.GONE    // title is in toolbar
-            binding.contentGroup.visibility   = View.VISIBLE // row_category + scroll_content group
             binding.scrollContent.visibility  = View.GONE
             binding.scrollPreview.visibility  = View.VISIBLE
             binding.fabMode.setImageResource(R.drawable.ic_edit)
@@ -523,13 +531,17 @@ class EditorFragment : Fragment() {
                 viewModel.uiState.collect { state ->
                     when (state) {
                         is EditorUiState.Loading -> {
-                            binding.progressBar.visibility   = View.VISIBLE
-                            binding.contentGroup.visibility  = View.GONE
-                            binding.scrollPreview.visibility = View.GONE
+                            binding.progressBar.visibility    = View.VISIBLE
+                            binding.titleContainer.visibility = View.GONE
+                            binding.rowCategory.visibility    = View.GONE
+                            binding.scrollContent.visibility  = View.GONE
+                            binding.scrollPreview.visibility  = View.GONE
                         }
                         is EditorUiState.Editing -> {
                             binding.progressBar.visibility = View.GONE
-                            binding.contentGroup.visibility = View.VISIBLE
+                            if (fieldsPopulated) {
+                                applyMode(isPreviewMode)
+                            }
                             requireActivity().invalidateOptionsMenu()
                         }
                         is EditorUiState.Saved  -> findNavController().popBackStack()
@@ -548,7 +560,7 @@ class EditorFragment : Fragment() {
         }
     }
 
-    private fun observeFieldsOnce(isExistingNote: Boolean) {
+    private fun observeFieldsOnce() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
@@ -559,13 +571,7 @@ class EditorFragment : Fragment() {
                         binding.etContent.setText(viewModel.content.value)
 
                         setupTitleInToolbar()
-
-                        if (isExistingNote) {
-                            togglePreviewMode()
-                        } else {
-                            binding.titleContainer.visibility = View.VISIBLE
-                            updateCategoryChip(viewModel.category.value)
-                        }
+                        applyMode(isPreviewMode)
                     }
                 }
             }

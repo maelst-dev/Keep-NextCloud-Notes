@@ -17,13 +17,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Editor content — hidden during loading -->
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/content_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:constraint_referenced_ids="row_category, scroll_content" />
 
     <!-- Note title container (label + input) — GONE by default; shown in Edit mode, hidden in Preview
          (title is displayed in the ActionBar when in Preview mode) -->

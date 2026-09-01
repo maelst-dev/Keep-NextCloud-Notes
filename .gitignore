@@ -55,5 +55,3 @@ captures/
 .DS_Store
 Thumbs.db
 
-# Local AI agent documentation
-AGENTS.md
