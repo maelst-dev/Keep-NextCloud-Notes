@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.keepnc.data.auth.Credentials
 import com.keepnc.data.auth.LoginFlowService
 import com.keepnc.data.auth.TokenStorage
+import com.keepnc.data.repository.NotesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginFlowService: LoginFlowService,
-    private val tokenStorage: TokenStorage
+    private val tokenStorage: TokenStorage,
+    private val repository: NotesRepository
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
@@ -78,6 +80,9 @@ class LoginViewModel @Inject constructor(
                         appPassword = creds.appPassword
                     )
                 )
+
+                // Step 5: Clean slate for the new session before initial sync
+                repository.clearAllLocalNotes()
 
                 _loginState.value = LoginState.Success
 

@@ -15,12 +15,12 @@ import org.commonmark.node.SoftLineBreak
  * Factory for creating configured [Markwon] instances.
  *
  * Provides:
- * - [createForEditor]: Used in note editor preview with 16dp checkboxes and a 26dp Google Keep-style gap.
+ * - [createForEditor]: Used in note editor preview with 16dp checkboxes and Google Keep-style gap.
  * - [createForCard]: Used in note cards on main screen with compact default checkboxes.
  */
 object MarkwonFactory {
 
-    /** Creates Markwon instance for the note editor with 16dp checkboxes and generous text spacing. */
+    /** Creates Markwon instance for the note editor with dynamic auto-centering checkboxes. */
     fun createForEditor(context: Context): Markwon {
         val density = context.resources.displayMetrics.density
         return Markwon.builder(context)
@@ -61,4 +61,19 @@ object MarkwonFactory {
 
     /** Default factory method (delegates to editor). */
     fun create(context: Context): Markwon = createForEditor(context)
+
+    /**
+     * Formats task-list items so checked items are properly struck-through.
+     * Ensures any checked item (`- [x]`) has clean matching `~~strikethrough~~`
+     * even if it was synced without tildes from Nextcloud Web or had unclosed tildes.
+     */
+    fun formatChecklistStrikethrough(content: String): String {
+        val checkedTaskRegex = Regex("""^(\s*[-*]\s*\[[xX]\]\s*)(.+)$""", RegexOption.MULTILINE)
+        return checkedTaskRegex.replace(content) { match ->
+            val prefix = match.groupValues[1]
+            val rawBody = match.groupValues[2].trim()
+            val cleanBody = rawBody.removePrefix("~~").removeSuffix("~~").trim()
+            "$prefix~~$cleanBody~~"
+        }
+    }
 }

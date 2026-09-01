@@ -48,7 +48,9 @@ class EditorViewModelTest {
         val allocateMethod = unsafeClass.getMethod("allocateInstance", Class::class.java)
         val dummyTokenStorage = allocateMethod.invoke(unsafe, TokenStorage::class.java) as TokenStorage
 
-        repository = NotesRepository(fakeDao, fakeApi, dummyTokenStorage)
+        repository = NotesRepository(fakeDao, fakeApi, dummyTokenStorage).apply {
+            ioDispatcher = testDispatcher
+        }
         viewModel = EditorViewModel(repository)
     }
 
@@ -79,10 +81,10 @@ class EditorViewModelTest {
         assertEquals("Groceries", viewModel.category.value)
         assertTrue(viewModel.isFavorite.value)
 
-        // Database should be updated immediately with stripped content
+        // Database should be updated immediately with stripped content and synced
         val updatedNote = fakeDao.notes[1L]!!
         assertEquals("- [ ] Milk\n- [ ] Bread", updatedNote.content)
-        assertEquals(SyncStatus.DIRTY, updatedNote.syncStatus)
+        assertEquals(SyncStatus.SYNCED, updatedNote.syncStatus)
 
         // hasChanges should be false because no user edits have been made
         assertFalse(
@@ -116,7 +118,7 @@ class EditorViewModelTest {
 
         val updatedNote = fakeDao.notes[2L]!!
         assertEquals("", updatedNote.content)
-        assertEquals(SyncStatus.DIRTY, updatedNote.syncStatus)
+        assertEquals(SyncStatus.SYNCED, updatedNote.syncStatus)
 
         assertFalse(
             viewModel.hasChanges(
@@ -176,6 +178,53 @@ class EditorViewModelTest {
         assertFalse(updateCalled)
     }
 
+    @Test
+    fun `formatChecklistStrikethrough fixes unclosed tildes on checked task`() {
+        val input = "- [x] ~~Попробовать"
+        val formatted = com.keepnc.ui.MarkwonFactory.formatChecklistStrikethrough(input)
+        assertEquals("- [x] ~~Попробовать~~", formatted)
+    }
+
+    @Test
+    fun `formatChecklistStrikethrough wraps checked item without tildes`() {
+        val input = "- [x] Помыть обувь"
+        val formatted = com.keepnc.ui.MarkwonFactory.formatChecklistStrikethrough(input)
+        assertEquals("- [x] ~~Помыть обувь~~", formatted)
+    }
+
+    @Test
+    fun `formatChecklistStrikethrough preserves already formatted checked item`() {
+        val input = "- [x] ~~Убрать куртки~~"
+        val formatted = com.keepnc.ui.MarkwonFactory.formatChecklistStrikethrough(input)
+        assertEquals("- [x] ~~Убрать куртки~~", formatted)
+    }
+
+    @Test
+    fun `formatChecklistStrikethrough does not alter unchecked items`() {
+        val input = "- [ ] Сделать отрезной станок?)"
+        val formatted = com.keepnc.ui.MarkwonFactory.formatChecklistStrikethrough(input)
+        assertEquals("- [ ] Сделать отрезной станок?)", formatted)
+    }
+
+    @Test
+    fun `note excerpt takes up to 10 full lines and does not cut at 200 chars`() {
+        val noteContent = (1..15).joinToString("\n") { i -> "- [ ] Task number $i with plenty of long text" }
+        val note = NoteEntity(title = "My Note", content = noteContent)
+
+        val lines = note.excerpt.lines()
+        assertEquals(10, lines.size)
+        assertEquals("- [ ] Task number 1 with plenty of long text", lines.first())
+        assertEquals("- [ ] Task number 10 with plenty of long text", lines.last())
+    }
+
+    @Test
+    fun `note excerpt strips duplicate title if first line matches title`() {
+        val noteContent = "My Note\n- [ ] Task 1\n- [ ] Task 2"
+        val note = NoteEntity(title = "My Note", content = noteContent)
+
+        assertEquals("- [ ] Task 1\n- [ ] Task 2", note.excerpt)
+    }
+
     private class FakeNoteDao : NoteDao {
         val notes = mutableMapOf<Long, NoteEntity>()
         var onUpdate: (() -> Unit)? = null
@@ -185,6 +234,7 @@ class EditorViewModelTest {
         override fun getFavorites(): Flow<List<NoteEntity>> = flowOf(notes.values.filter { it.favorite })
         override fun searchNotes(query: String): Flow<List<NoteEntity>> = flowOf(notes.values.filter { it.title.contains(query) || it.content.contains(query) })
         override fun getCategories(): Flow<List<String>> = flowOf(notes.values.map { it.category }.distinct())
+        override suspend fun getNotesByServerId(serverId: Long): List<NoteEntity> = notes.values.filter { it.serverId == serverId }
         override suspend fun getNoteByServerId(serverId: Long): NoteEntity? = notes.values.find { it.serverId == serverId }
         override suspend fun getNoteById(id: Long): NoteEntity? = notes[id]
         override suspend fun getDirtyNotes(): List<NoteEntity> = notes.values.filter { it.syncStatus == SyncStatus.DIRTY }
@@ -204,6 +254,7 @@ class EditorViewModelTest {
         override suspend fun deletePureLocalPendingDeletes() {}
         override suspend fun deleteSyncedNotesNotIn(serverIds: List<Long>) {}
         override suspend fun deleteAllSynced() {}
+        override suspend fun clearAll() { notes.clear() }
     }
 
     private class FakeNotesApi : NotesApi {

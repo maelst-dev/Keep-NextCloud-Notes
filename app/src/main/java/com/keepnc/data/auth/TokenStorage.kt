@@ -18,18 +18,31 @@ import javax.inject.Singleton
  * This class is a @Singleton — one instance shared across the whole app lifetime.
  */
 @Singleton
-class TokenStorage @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
-    // Lazy initialization so the Keystore isn't accessed until first use.
-    private val prefs: SharedPreferences by lazy { createEncryptedPrefs() }
+open class TokenStorage {
+    private val context: Context?
 
-    private fun createEncryptedPrefs(): SharedPreferences {
-        val masterKey = MasterKey.Builder(context)
+    @Inject
+    constructor(@ApplicationContext context: Context) {
+        this.context = context
+    }
+
+    /** Constructor for unit testing without Android Context */
+    constructor() {
+        this.context = null
+    }
+
+    // Lazy initialization so the Keystore isn't accessed until first use.
+    private val prefs: SharedPreferences by lazy {
+        val ctx = checkNotNull(context) { "Context is required for SharedPreferences access" }
+        createEncryptedPrefs(ctx)
+    }
+
+    private fun createEncryptedPrefs(ctx: Context): SharedPreferences {
+        val masterKey = MasterKey.Builder(ctx)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
         return EncryptedSharedPreferences.create(
-            context,
+            ctx,
             "keepnc_secure_prefs",
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
@@ -37,7 +50,7 @@ class TokenStorage @Inject constructor(
         )
     }
 
-    fun saveCredentials(credentials: Credentials) {
+    open fun saveCredentials(credentials: Credentials) {
         prefs.edit()
             .putString(KEY_SERVER_URL, credentials.serverUrl)
             .putString(KEY_LOGIN_NAME, credentials.loginName)
@@ -45,19 +58,19 @@ class TokenStorage @Inject constructor(
             .apply()
     }
 
-    fun getCredentials(): Credentials? {
+    open fun getCredentials(): Credentials? {
         val serverUrl = prefs.getString(KEY_SERVER_URL, null) ?: return null
         val loginName = prefs.getString(KEY_LOGIN_NAME, null) ?: return null
         val appPassword = prefs.getString(KEY_APP_PASSWORD, null) ?: return null
         return Credentials(serverUrl, loginName, appPassword)
     }
 
-    fun getServerUrl(): String? = prefs.getString(KEY_SERVER_URL, null)
+    open fun getServerUrl(): String? = prefs.getString(KEY_SERVER_URL, null)
 
-    fun isLoggedIn(): Boolean = getCredentials() != null
+    open fun isLoggedIn(): Boolean = getCredentials() != null
 
     /** Wipe all stored credentials (logout). */
-    fun clearCredentials() {
+    open fun clearCredentials() {
         prefs.edit().clear().apply()
     }
 

@@ -55,15 +55,17 @@ class NoteCardAdapter(
             val excerpt = if (note.title.isNotBlank()) {
                 val firstLine = rawExcerpt.substringBefore('\n').trim()
                 if (firstLine == note.title.trim()) {
-                    rawExcerpt.substringAfter('\n', missingDelimiterValue = "").trimStart('\n')
+                    rawExcerpt.substringAfter('\n', missingDelimiterValue = "").trimStart('\r', '\n')
                 } else rawExcerpt
             } else rawExcerpt
 
-            if (excerpt.isBlank()) {
+            val formattedExcerpt = MarkwonFactory.formatChecklistStrikethrough(excerpt)
+
+            if (formattedExcerpt.isBlank()) {
                 binding.tvContent.visibility = View.GONE
             } else {
                 binding.tvContent.visibility = View.VISIBLE
-                markwon.setMarkdown(binding.tvContent, excerpt)
+                markwon.setMarkdown(binding.tvContent, formattedExcerpt)
                 // Markwon sets LinkMovementMethod which swallows all touch events —
                 // remove it so clicks bubble up to the MaterialCardView instead.
                 binding.tvContent.movementMethod = null

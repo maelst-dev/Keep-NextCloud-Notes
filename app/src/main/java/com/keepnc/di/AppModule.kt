@@ -87,7 +87,7 @@ object AppModule {
         val baseUrl = tokenStorage.getServerUrl()
             ?.trimEnd('/')
             ?.let { "$it/index.php/apps/notes/api/v1/" }
-            ?: "https://placeholder.invalid/"
+            ?: "https://placeholder.invalid/index.php/apps/notes/api/v1/"
 
         return Retrofit.Builder()
             .baseUrl(baseUrl)

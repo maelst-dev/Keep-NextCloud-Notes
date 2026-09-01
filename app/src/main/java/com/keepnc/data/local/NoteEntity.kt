@@ -34,8 +34,36 @@ data class NoteEntity(
 ) {
     /**
      * Short preview text for the card grid. Not stored in the database.
-     * Strips leading/trailing whitespace and caps at 200 characters.
+     * Takes up to 10 full lines without cutting lines mid-sentence or mid-tag.
+     * Android TextView handles layout truncating (maxLines=8, ellipsize=end).
      */
-    @Ignore
-    val excerpt: String = content.trim().take(200)
+    @get:Ignore
+    val excerpt: String get() {
+        val trimmed = content.trim()
+        if (trimmed.isEmpty()) return ""
+
+        // Strip duplicate title from first line if present
+        val text = if (title.isNotBlank() && trimmed.substringBefore('\n').trim() == title.trim()) {
+            trimmed.substringAfter('\n', missingDelimiterValue = "").trimStart('\r', '\n')
+        } else {
+            trimmed
+        }
+
+        // Take up to 10 complete lines
+        val lines = text.lines().take(10)
+        val candidate = lines.joinToString("\n")
+
+        // Cap at 1000 characters for safety on unusually large paragraphs
+        return if (candidate.length <= 1000) {
+            candidate
+        } else {
+            val sub = candidate.substring(0, 1000)
+            val lastNewline = sub.lastIndexOf('\n')
+            if (lastNewline > 100) {
+                sub.substring(0, lastNewline)
+            } else {
+                sub.substringBeforeLast(' ')
+            }
+        }
+    }
 }

@@ -339,17 +339,7 @@ class EditorFragment : Fragment() {
     private var touchDownY = 0f
 
     private fun renderMarkdownWithLargeCheckboxes(content: String) {
-        // Ensure checked task items render with strikethrough in preview
-        val checkedTaskRegex = Regex("""^(\s*[-*]\s*\[[xX]\]\s*)(.+)$""", RegexOption.MULTILINE)
-        val formattedContent = checkedTaskRegex.replace(content) { match ->
-            val prefix = match.groupValues[1]
-            val body = match.groupValues[2].trim()
-            if (body.startsWith("~~") && body.endsWith("~~") && body.length >= 4) {
-                match.value
-            } else {
-                "$prefix~~$body~~"
-            }
-        }
+        val formattedContent = MarkwonFactory.formatChecklistStrikethrough(content)
 
         val markwon = MarkwonFactory.createForEditor(requireContext())
         markwon.setMarkdown(binding.tvPreview, formattedContent)

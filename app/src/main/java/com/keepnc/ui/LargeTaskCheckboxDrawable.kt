@@ -57,8 +57,16 @@ class LargeTaskCheckboxDrawable(
     override fun draw(canvas: Canvas) {
         val b = bounds
         val boxLeft = b.left.toFloat()
-        // Center vertically within line bounds
-        val boxTop = b.top.toFloat() + (b.height() - sizePx).coerceAtLeast(0) / 2f
+
+        // Account for lineSpacingExtra at the bottom of the line (6dp in tv_preview)
+        // so the checkbox centers with the text line itself rather than the bottom padding
+        val lineSpacing = 6f * density
+        val textHeight = if (b.height() > sizePx + lineSpacing) {
+            b.height() - lineSpacing
+        } else {
+            b.height().toFloat()
+        }
+        val boxTop = b.top.toFloat() + ((textHeight - sizePx) / 2f).coerceAtLeast(0f)
         val boxRight = boxLeft + sizePx
         val boxBottom = boxTop + sizePx
 

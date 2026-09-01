@@ -43,7 +43,7 @@
     <string name="action_delete">Удалить</string>
     <string name="action_sync">Синхронизировать</string>
     <string name="action_save">Сохранить</string>
-    <string name="action_discard">Не сохранять</string>
+    <string name="action_discard">Сбросить</string>
     <string name="confirm">Удалить</string>
     <string name="cancel">Отмена</string>
 
@@ -73,4 +73,9 @@
     <string name="editor_action_hide_checkboxes">Обычный текст</string>
     <string name="editor_action_category">Категория</string>
     <string name="editor_action_delete_note">Удалить заметку</string>
+
+    <!-- Accessibility -->
+    <string name="cd_new_note">Создать заметку</string>
+    <string name="cd_pinned">Закреплена</string>
+    <string name="cd_unsynced">Несинхронизированные изменения</string>
 </resources>

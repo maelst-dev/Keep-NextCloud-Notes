@@ -25,6 +25,7 @@ import com.keepnc.ui.notes.NotesFragment
 import com.keepnc.ui.notes.NotesViewModel
 import androidx.fragment.app.viewModels
 import com.keepnc.work.SyncWorker
+import com.keepnc.data.repository.NotesRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -47,6 +48,9 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var tokenStorage: TokenStorage
+
+    @Inject
+    lateinit var repository: NotesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -174,14 +178,17 @@ class MainActivity : AppCompatActivity() {
         WorkManager.getInstance(this).cancelUniqueWork(SyncWorker.WORK_NAME_PERIODIC)
         WorkManager.getInstance(this).cancelUniqueWork(SyncWorker.WORK_NAME_ONE_TIME)
 
-        // Clear stored credentials
-        tokenStorage.clearCredentials()
+        lifecycleScope.launch {
+            // Clear local notes and stored credentials
+            repository.clearAllLocalNotes()
+            tokenStorage.clearCredentials()
 
-        // Go back to login screen
-        startActivity(Intent(this, LoginActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        })
-        finish()
+            // Go back to login screen
+            startActivity(Intent(this@MainActivity, LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            })
+            finish()
+        }
     }
 
     private fun schedulePeriodicSync() {

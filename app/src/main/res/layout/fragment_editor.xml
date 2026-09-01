@@ -6,10 +6,11 @@
     android:layout_height="match_parent">
 
     <!-- Loading spinner (shown while note loads from Room) -->
-    <ProgressBar
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:indeterminate="true"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -153,7 +154,7 @@
             android:id="@+id/tv_preview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
             android:textColor="?attr/colorOnSurface"
             android:lineSpacingExtra="6dp"
             android:paddingStart="24dp"

@@ -73,4 +73,9 @@
     <string name="editor_action_hide_checkboxes">Plain text</string>
     <string name="editor_action_category">Category</string>
     <string name="editor_action_delete_note">Delete note</string>
+
+    <!-- Accessibility -->
+    <string name="cd_new_note">Create note</string>
+    <string name="cd_pinned">Pinned</string>
+    <string name="cd_unsynced">Unsynced changes</string>
 </resources>

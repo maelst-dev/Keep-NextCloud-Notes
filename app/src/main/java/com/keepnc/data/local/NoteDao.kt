@@ -39,6 +39,10 @@ interface NoteDao {
     @Query("SELECT DISTINCT category FROM notes WHERE syncStatus != 'PENDING_DELETE' AND category != '' ORDER BY category")
     fun getCategories(): Flow<List<String>>
 
+    /** Look up all local notes with a given server-side ID (used for deduplication during sync). */
+    @Query("SELECT * FROM notes WHERE serverId = :serverId ORDER BY id ASC")
+    suspend fun getNotesByServerId(serverId: Long): List<NoteEntity>
+
     /** Look up a note by its server-side ID (used during sync). */
     @Query("SELECT * FROM notes WHERE serverId = :serverId LIMIT 1")
     suspend fun getNoteByServerId(serverId: Long): NoteEntity?
@@ -92,4 +96,10 @@ interface NoteDao {
      */
     @Query("DELETE FROM notes WHERE syncStatus = 'SYNCED'")
     suspend fun deleteAllSynced()
+
+    /**
+     * Deletes ALL notes from the database. Used when logging out or switching accounts.
+     */
+    @Query("DELETE FROM notes")
+    suspend fun clearAll()
 }

@@ -46,14 +46,20 @@ class AuthInterceptor @Inject constructor(
                 val newUrlBuilder = targetBaseUrl.newBuilder()
                 // Find path relative to api/v1/
                 val v1Index = originalUrl.pathSegments.indexOf("v1")
-                if (v1Index != -1 && v1Index < originalUrl.pathSegments.size - 1) {
-                    val relativeSegments = originalUrl.pathSegments.subList(
+                val relativeSegments = if (v1Index != -1 && v1Index < originalUrl.pathSegments.size - 1) {
+                    originalUrl.pathSegments.subList(
                         v1Index + 1,
                         originalUrl.pathSegments.size
                     )
-                    for (segment in relativeSegments) {
-                        newUrlBuilder.addPathSegment(segment)
-                    }
+                } else if (v1Index == -1) {
+                    // Fallback if placeholder URL had no prefix — all segments are relative to baseUrl
+                    originalUrl.pathSegments.filter { it.isNotBlank() }
+                } else {
+                    emptyList()
+                }
+
+                for (segment in relativeSegments) {
+                    newUrlBuilder.addPathSegment(segment)
                 }
                 originalUrl.query?.let { newUrlBuilder.query(it) }
                 requestBuilder.url(newUrlBuilder.build())

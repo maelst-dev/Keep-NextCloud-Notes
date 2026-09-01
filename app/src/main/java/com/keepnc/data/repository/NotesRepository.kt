@@ -9,8 +9,11 @@ import com.keepnc.data.remote.dto.NoteCreateRequest
 import com.keepnc.data.remote.dto.NoteDto
 import com.keepnc.data.remote.dto.NoteUpdateRequest
 import com.keepnc.data.auth.TokenStorage
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import javax.inject.Inject
@@ -34,7 +37,9 @@ class NotesRepository @Inject constructor(
     private val notesApi: NotesApi,
     private val tokenStorage: TokenStorage
 ) {
+    var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
+    private val syncMutex = Mutex()
     private val tag = "NotesRepository"
 
     // -----------------------------------------------------------------------
@@ -52,7 +57,7 @@ class NotesRepository @Inject constructor(
 
     fun getCategories(): Flow<List<String>> = noteDao.getCategories()
 
-    suspend fun getNoteById(id: Long): NoteEntity? = withContext(Dispatchers.IO) {
+    suspend fun getNoteById(id: Long): NoteEntity? = withContext(ioDispatcher) {
         noteDao.getNoteById(id)
     }
 
@@ -70,7 +75,7 @@ class NotesRepository @Inject constructor(
         content: String,
         category: String,
         favorite: Boolean
-    ): Long = withContext(Dispatchers.IO) {
+    ): Long = withContext(ioDispatcher) {
         val entity = NoteEntity(
             title = title,
             content = content,
@@ -91,7 +96,7 @@ class NotesRepository @Inject constructor(
         content: String,
         category: String,
         favorite: Boolean
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(ioDispatcher) {
         val existing = noteDao.getNoteById(id) ?: return@withContext
         noteDao.update(
             existing.copy(
@@ -110,7 +115,7 @@ class NotesRepository @Inject constructor(
      * - If the note was never synced (no serverId), delete it immediately.
      * - Otherwise, mark as [SyncStatus.PENDING_DELETE] so the worker can call DELETE on the API.
      */
-    suspend fun deleteNote(id: Long) = withContext(Dispatchers.IO) {
+    suspend fun deleteNote(id: Long) = withContext(ioDispatcher) {
         val existing = noteDao.getNoteById(id) ?: return@withContext
         if (existing.serverId == null) {
             noteDao.deleteById(id)
@@ -132,117 +137,136 @@ class NotesRepository @Inject constructor(
      *
      * Returns [Result.success] on completion, [Result.failure] on any error.
      */
-    suspend fun syncWithServer(): Result<Unit> = withContext(Dispatchers.IO) {
-        runCatching {
-            Log.d(tag, "Starting syncWithServer...")
+    suspend fun syncWithServer(): Result<Unit> = withContext(ioDispatcher) {
+        syncMutex.withLock {
+            runCatching {
+                Log.d(tag, "Starting syncWithServer...")
 
-            // Step 1: Push dirty notes
-            val dirtyNotes = noteDao.getDirtyNotes()
-            Log.d(tag, "Pushing ${dirtyNotes.size} dirty notes...")
-            for (note in dirtyNotes) {
-                try {
-                    if (note.serverId == null) {
-                        // New note: create on server
-                        val dto = notesApi.createNote(
-                            NoteCreateRequest(note.title, note.content, note.category, note.favorite)
-                        )
-                        noteDao.update(
-                            note.copy(
-                                serverId = dto.id,
-                                etag = dto.etag,
-                                modified = dto.modified,
-                                syncStatus = SyncStatus.SYNCED
+                // Step 1: Push dirty notes
+                val dirtyNotes = noteDao.getDirtyNotes()
+                Log.d(tag, "Pushing ${dirtyNotes.size} dirty notes...")
+                for (note in dirtyNotes) {
+                    try {
+                        if (note.serverId == null) {
+                            // New note: create on server
+                            val dto = notesApi.createNote(
+                                NoteCreateRequest(note.title, note.content, note.category, note.favorite)
                             )
-                        )
-                    } else {
-                        // Existing note: update on server
-                        val dto = notesApi.updateNote(
-                            note.serverId,
-                            NoteUpdateRequest(note.title, note.content, note.category, note.favorite)
-                        )
-                        noteDao.update(
-                            note.copy(
-                                etag = dto.etag,
-                                modified = dto.modified,
-                                syncStatus = SyncStatus.SYNCED
+                            noteDao.update(
+                                note.copy(
+                                    serverId = dto.id,
+                                    etag = dto.etag,
+                                    modified = dto.modified,
+                                    syncStatus = SyncStatus.SYNCED
+                                )
                             )
-                        )
-                    }
-                } catch (e: HttpException) {
-                    if (e.code() == 404 && note.serverId != null) {
-                        // Note was deleted on server while we had local edits. Re-create on server
-                        val dto = notesApi.createNote(
-                            NoteCreateRequest(note.title, note.content, note.category, note.favorite)
-                        )
-                        noteDao.update(
-                            note.copy(
-                                serverId = dto.id,
-                                etag = dto.etag,
-                                modified = dto.modified,
-                                syncStatus = SyncStatus.SYNCED
+                        } else {
+                            // Existing note: update on server
+                            val dto = notesApi.updateNote(
+                                note.serverId,
+                                NoteUpdateRequest(note.title, note.content, note.category, note.favorite)
                             )
-                        )
-                    } else {
-                        throw e
+                            noteDao.update(
+                                note.copy(
+                                    etag = dto.etag,
+                                    modified = dto.modified,
+                                    syncStatus = SyncStatus.SYNCED
+                                )
+                            )
+                        }
+                    } catch (e: HttpException) {
+                        if (e.code() == 404 && note.serverId != null) {
+                            // Note was deleted on server while we had local edits. Re-create on server
+                            val dto = notesApi.createNote(
+                                NoteCreateRequest(note.title, note.content, note.category, note.favorite)
+                            )
+                            noteDao.update(
+                                note.copy(
+                                    serverId = dto.id,
+                                    etag = dto.etag,
+                                    modified = dto.modified,
+                                    syncStatus = SyncStatus.SYNCED
+                                )
+                            )
+                        } else {
+                            throw e
+                        }
                     }
                 }
-            }
 
-            // Step 2: Push pending deletes
-            val pendingDeletes = noteDao.getPendingDeleteNotes()
-            Log.d(tag, "Pushing ${pendingDeletes.size} pending deletes...")
-            for (note in pendingDeletes) {
-                try {
-                    note.serverId?.let { notesApi.deleteNote(it) }
-                } catch (e: HttpException) {
-                    // 404 means already deleted on server, which is expected/safe
-                    if (e.code() != 404) throw e
+                // Step 2: Push pending deletes
+                val pendingDeletes = noteDao.getPendingDeleteNotes()
+                Log.d(tag, "Pushing ${pendingDeletes.size} pending deletes...")
+                for (note in pendingDeletes) {
+                    try {
+                        note.serverId?.let { notesApi.deleteNote(it) }
+                    } catch (e: HttpException) {
+                        // 404 means already deleted on server, which is expected/safe
+                        if (e.code() != 404) throw e
+                    }
+                    noteDao.delete(note)
                 }
-                noteDao.delete(note)
-            }
-            // Remove local-only notes marked for deletion (serverId == null)
-            noteDao.deletePureLocalPendingDeletes()
+                // Remove local-only notes marked for deletion (serverId == null)
+                noteDao.deletePureLocalPendingDeletes()
 
-            // Step 3: Pull from server — insert new notes, update changed ones
-            Log.d(tag, "Fetching all notes from server...")
-            val serverNotes = notesApi.getNotes()
-            Log.d(tag, "Received ${serverNotes.size} notes from server")
-            for (dto in serverNotes) {
-                val local = noteDao.getNoteByServerId(dto.id)
-                when {
-                    local == null -> {
+                // Step 3: Pull from server — insert new notes, update changed ones, clean up duplicates
+                Log.d(tag, "Fetching all notes from server...")
+                val serverNotes = notesApi.getNotes()
+                Log.d(tag, "Received ${serverNotes.size} notes from server")
+                for (dto in serverNotes) {
+                    val localNotes = noteDao.getNotesByServerId(dto.id)
+                    if (localNotes.isEmpty()) {
                         // Note exists on server but not locally — insert it
                         noteDao.insert(dto.toEntity())
-                    }
-                    local.syncStatus == SyncStatus.SYNCED && serverIsNewer(dto, local) -> {
-                        noteDao.update(
-                            local.copy(
-                                title = dto.title ?: "",
-                                content = dto.content ?: "",
-                                category = dto.category ?: "",
-                                favorite = dto.favorite,
-                                modified = dto.modified,
-                                etag = dto.etag
+                    } else {
+                        val primary = localNotes.first()
+                        // If duplicates exist in Room with the same serverId, clean them up
+                        if (localNotes.size > 1) {
+                            Log.w(tag, "Found ${localNotes.size} duplicate local notes for serverId ${dto.id}. Cleaning up...")
+                            for (duplicate in localNotes.drop(1)) {
+                                noteDao.delete(duplicate)
+                            }
+                        }
+                        if (primary.syncStatus == SyncStatus.SYNCED && serverIsNewer(dto, primary)) {
+                            noteDao.update(
+                                primary.copy(
+                                    title = dto.title ?: "",
+                                    content = dto.content ?: "",
+                                    category = dto.category ?: "",
+                                    favorite = dto.favorite,
+                                    modified = dto.modified,
+                                    etag = dto.etag
+                                )
                             )
-                        )
+                        }
+                        // DIRTY: local edits win — do nothing; they'll be pushed in the next sync
                     }
-                    // DIRTY: local edits win — do nothing; they'll be pushed in the next sync
                 }
-            }
 
-            // Step 4: Delete local notes that were removed on the server.
-            // Any SYNCED note whose serverId is absent from the server response
-            // was deleted remotely and should be removed from Room too.
-            val serverIds = serverNotes.map { it.id }
-            if (serverIds.isEmpty()) {
-                noteDao.deleteAllSynced()
-            } else {
-                noteDao.deleteSyncedNotesNotIn(serverIds)
+                // Step 4: Delete local notes that were removed on the server.
+                // Any SYNCED note whose serverId is absent from the server response
+                // was deleted remotely and should be removed from Room too.
+                val serverIds = serverNotes.map { it.id }
+                if (serverIds.isEmpty()) {
+                    noteDao.deleteAllSynced()
+                } else {
+                    noteDao.deleteSyncedNotesNotIn(serverIds)
+                }
+                Log.d(tag, "Sync completed successfully.")
+                Unit
+            }.onFailure { e ->
+                Log.e(tag, "Sync failed: ${e.message}", e)
             }
-            Log.d(tag, "Sync completed successfully.")
-            Unit
-        }.onFailure { e ->
-            Log.e(tag, "Sync failed: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Clears all local notes from the Room database.
+     * Used on logout or account switch.
+     */
+    suspend fun clearAllLocalNotes() = withContext(ioDispatcher) {
+        syncMutex.withLock {
+            noteDao.clearAll()
         }
     }
 
