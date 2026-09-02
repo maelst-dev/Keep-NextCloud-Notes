@@ -78,6 +78,12 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
 
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id == R.id.notesFragment) {
+                updateToolbarTitle(currentFilter)
+            }
+        }
+
         // Handle drawer item clicks
         binding.navView.setNavigationItemSelectedListener { item ->
             binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -104,6 +110,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var currentFilter: NotesFilter = NotesFilter.All
+
+    private fun updateToolbarTitle(filter: NotesFilter) {
+        supportActionBar?.title = when (filter) {
+            is NotesFilter.All -> getString(R.string.notes_all)
+            is NotesFilter.Favorites -> getString(R.string.notes_favorites)
+            is NotesFilter.ByCategory -> filter.category
+            is NotesFilter.Search -> getString(R.string.notes_search_hint)
+        }
+    }
+
     /**
      * Applies a filter to the currently visible [NotesFragment].
      * We find the fragment via the NavHostFragment's child fragment manager.
@@ -112,6 +129,7 @@ class MainActivity : AppCompatActivity() {
      * navigate back to it first, then apply the filter.
      */
     private fun showNotesWithFilter(filter: NotesFilter) {
+        currentFilter = filter
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
         val navController = navHostFragment?.navController
@@ -131,13 +149,7 @@ class MainActivity : AppCompatActivity() {
             (it.viewModels<NotesViewModel>().value).setFilter(filter)
         }
 
-        // Update toolbar title
-        supportActionBar?.title = when (filter) {
-            is NotesFilter.All -> getString(R.string.notes_all)
-            is NotesFilter.Favorites -> getString(R.string.notes_favorites)
-            is NotesFilter.ByCategory -> filter.category
-            is NotesFilter.Search -> getString(R.string.notes_search_hint)
-        }
+        updateToolbarTitle(filter)
     }
 
     private fun observeCategories() {
