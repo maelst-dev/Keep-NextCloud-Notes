@@ -3,6 +3,7 @@ package com.keepnc.ui.editor
 import android.content.Context
 import android.os.Bundle
 import android.text.Editable
+import android.text.Selection
 import android.text.Spannable
 import android.text.Spanned
 import android.text.style.LeadingMarginSpan
@@ -169,7 +170,7 @@ class EditorFragment : Fragment() {
 
     private fun showActionsBottomSheet() {
         val currentContent = binding.etContent.text?.toString() ?: ""
-        val sheet = EditorActionsBottomSheet.newInstance(hasCheckboxes(currentContent))
+        val sheet = EditorActionsBottomSheet.newInstance(isFullChecklist(currentContent))
         sheet.onToggleCheckboxesListener = {
             toggleChecklistMode()
         }
@@ -188,8 +189,10 @@ class EditorFragment : Fragment() {
     // Checklist Conversion & Delete Actions
     // =========================================================================
 
-    private fun hasCheckboxes(text: String): Boolean {
-        return Regex("""^\s*[-*]\s*\[[ xX]?\]""", RegexOption.MULTILINE).containsMatchIn(text)
+    private fun isFullChecklist(text: String): Boolean {
+        val nonBlankLines = text.lines().filter { it.isNotBlank() }
+        if (nonBlankLines.isEmpty()) return false
+        return nonBlankLines.all { it.matches(Regex("""^\s*[-*]\s*\[[ xX]?\].*""")) }
     }
 
     /**
@@ -197,7 +200,7 @@ class EditorFragment : Fragment() {
      */
     private fun toggleChecklistMode() {
         val currentContent = binding.etContent.text?.toString() ?: ""
-        val newContent = if (hasCheckboxes(currentContent)) {
+        val newContent = if (isFullChecklist(currentContent)) {
             // Convert checklist ➔ plain text (strip checkboxes and strikethroughs)
             currentContent.lines().joinToString("\n") { line ->
                 val withoutPrefix = line.replace(Regex("""^\s*[-*]\s*\[[ xX]?\]\s*"""), "")
@@ -479,44 +482,101 @@ class EditorFragment : Fragment() {
     // =========================================================================
 
     private fun setupTaskListAutoComplete() {
-        var beforeLength = 0
+        var isNewlineInserted = false
+        var newlinePos = -1
 
         binding.etContent.addTextChangedListener(
-            beforeTextChanged = { s, _, _, _ ->
-                beforeLength = s?.length ?: 0
+            beforeTextChanged = { _, _, _, _ -> },
+            onTextChanged = { s, start, before, count ->
+                if (isInsertingTaskPrefix) return@addTextChangedListener
+                // Detect when a single newline character was typed or inserted
+                if (count == 1 && before == 0 && s?.getOrNull(start) == '\n') {
+                    isNewlineInserted = true
+                    newlinePos = start
+                } else {
+                    isNewlineInserted = false
+                    newlinePos = -1
+                }
             },
-            onTextChanged = { _, _, _, _ -> },
             afterTextChanged = { s: Editable? ->
                 if (s == null || isInsertingTaskPrefix) return@addTextChangedListener
 
-                if (s.length <= beforeLength) return@addTextChangedListener
-
-                val cursorPos = binding.etContent.selectionStart
-                if (cursorPos <= 0) return@addTextChangedListener
-
-                if (s[cursorPos - 1] != '\n') return@addTextChangedListener
-
-                val textBeforeNewline = s.subSequence(0, cursorPos - 1).toString()
-                val prevLine = textBeforeNewline.substringAfterLast('\n')
-
-                val taskRegex = Regex("""^(\s*)[-*]\s*\[[ xX]\]\s*(.*)$""")
-                val match = taskRegex.find(prevLine) ?: return@addTextChangedListener
-
-                val itemContent = match.groupValues[2].trim()
-
-                if (itemContent.isEmpty()) {
-                    isInsertingTaskPrefix = true
-                    val prefixStart = cursorPos - 1 - prevLine.length
-                    val prefixEnd = cursorPos
-                    s.delete(prefixStart, prefixEnd)
-                    isInsertingTaskPrefix = false
+                if (!isNewlineInserted || newlinePos < 0 || newlinePos >= s.length || s[newlinePos] != '\n') {
                     return@addTextChangedListener
                 }
 
-                val prefix = "${match.groupValues[1]}- [ ] "
-                isInsertingTaskPrefix = true
-                s.insert(cursorPos, prefix)
-                isInsertingTaskPrefix = false
+                isNewlineInserted = false
+                val pos = newlinePos
+                newlinePos = -1
+
+                // Line before newline: from character after preceding '\n' up to pos
+                val lineStart = s.lastIndexOf('\n', pos - 1).let { if (it == -1) 0 else it + 1 }
+                val lineBefore = s.subSequence(lineStart, pos).toString()
+
+                // Line after newline: from pos + 1 up to next '\n' (or end of text)
+                val lineEnd = s.indexOf('\n', pos + 1).let { if (it == -1) s.length else it }
+                val lineAfter = s.subSequence(pos + 1, lineEnd).toString()
+
+                val taskRegex = Regex("""^(\s*)[-*]\s*\[[ xX]?\]\s*(.*)$""")
+                val emptyTaskRegex = Regex("""^(\s*)[-*]\s*\[[ xX]?\]\s*$""")
+
+                val matchBefore = taskRegex.find(lineBefore)
+                val matchAfter = taskRegex.find(lineAfter)
+
+                when {
+                    // Case 1: Pressed Enter at the START of an existing checklist item:
+                    // e.g. cursor was at "|- [ ] Item 2".
+                    // lineBefore is blank (the newly inserted line before Item 2), lineAfter is "- [ ] Item 2".
+                    lineBefore.isBlank() && matchAfter != null -> {
+                        val indent = matchAfter.groupValues[1]
+                        val prefix = "$indent- [ ] "
+                        isInsertingTaskPrefix = true
+                        s.replace(lineStart, pos, prefix)
+                        val targetCursor = lineStart + prefix.length
+                        Selection.setSelection(s, targetCursor)
+                        binding.etContent.post {
+                            binding.etContent.setSelection(targetCursor)
+                        }
+                        isInsertingTaskPrefix = false
+                    }
+
+                    // Case 2: Pressed Enter on an EMPTY checklist item (e.g. "- [ ] " with no text) to exit checklist:
+                    matchBefore != null && emptyTaskRegex.matches(lineBefore) && lineAfter.isEmpty() -> {
+                        isInsertingTaskPrefix = true
+                        s.delete(lineStart, pos)
+                        isInsertingTaskPrefix = false
+                    }
+
+                    // Case 3: Pressed Enter right after "- [ ] " before existing text (e.g. "- [ ] |Item 2"):
+                    // Splits the item into a new empty item above and keeps the item below.
+                    matchBefore != null && emptyTaskRegex.matches(lineBefore) && lineAfter.isNotEmpty() -> {
+                        val indent = matchBefore.groupValues[1]
+                        val prefix = "$indent- [ ] "
+                        isInsertingTaskPrefix = true
+                        s.insert(pos + 1, prefix)
+                        val targetCursor = pos
+                        Selection.setSelection(s, targetCursor)
+                        binding.etContent.post {
+                            binding.etContent.setSelection(targetCursor)
+                        }
+                        isInsertingTaskPrefix = false
+                    }
+
+                    // Case 4: Pressed Enter at the end of (or within) a checklist item with text:
+                    // e.g. "- [ ] Item 1|" -> user presses Enter.
+                    matchBefore != null -> {
+                        val indent = matchBefore.groupValues[1]
+                        val prefix = "$indent- [ ] "
+                        isInsertingTaskPrefix = true
+                        s.insert(pos + 1, prefix)
+                        val targetCursor = pos + 1 + prefix.length
+                        Selection.setSelection(s, targetCursor)
+                        binding.etContent.post {
+                            binding.etContent.setSelection(targetCursor)
+                        }
+                        isInsertingTaskPrefix = false
+                    }
+                }
             }
         )
     }
