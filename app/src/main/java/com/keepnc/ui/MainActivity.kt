@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity() {
 
         setupNavigation()
         observeCategories()
+        observeSync()
         schedulePeriodicSync()
     }
 
@@ -157,6 +159,16 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.categories.collect { categories ->
                     updateCategoryMenuItems(categories)
+                }
+            }
+        }
+    }
+
+    private fun observeSync() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                repository.isSyncing.collect { isSyncing ->
+                    binding.syncProgressBar.visibility = if (isSyncing) View.VISIBLE else View.GONE
                 }
             }
         }

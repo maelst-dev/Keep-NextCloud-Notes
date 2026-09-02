@@ -12,6 +12,9 @@ sealed class EditorUiState {
     /** Note data is loaded and the editor is active. */
     object Editing : EditorUiState()
 
+    /** Saving note or syncing changes with server. */
+    object Saving : EditorUiState()
+
     /** Note was saved — fragment should navigate back. */
     object Saved : EditorUiState()
 

@@ -30,8 +30,7 @@ class NotesViewModel @Inject constructor(
     private val _filter = MutableStateFlow<NotesFilter>(NotesFilter.All)
     val currentFilter: StateFlow<NotesFilter> = _filter.asStateFlow()
 
-    private val _isSyncing = MutableStateFlow(false)
-    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+    val isSyncing: StateFlow<Boolean> = repository.isSyncing
 
     private val _syncError = MutableSharedFlow<String>()
     val syncError: SharedFlow<String> = _syncError.asSharedFlow()
@@ -76,9 +75,8 @@ class NotesViewModel @Inject constructor(
      * Updates [isSyncing] and emits to [syncError] on failure so the UI responds immediately.
      */
     fun syncNotes() {
-        if (_isSyncing.value) return
+        if (isSyncing.value) return
         viewModelScope.launch {
-            _isSyncing.value = true
             repository.syncWithServer().fold(
                 onSuccess = {
                     // Sync complete; Room Flow will auto-update the UI
@@ -87,7 +85,6 @@ class NotesViewModel @Inject constructor(
                     _syncError.emit(error.message ?: "Sync error")
                 }
             )
-            _isSyncing.value = false
         }
     }
 

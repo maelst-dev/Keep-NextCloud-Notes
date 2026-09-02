@@ -604,6 +604,14 @@ class EditorFragment : Fragment() {
                             }
                             requireActivity().invalidateOptionsMenu()
                         }
+                        is EditorUiState.Saving -> {
+                            binding.progressBar.visibility = View.VISIBLE
+                            binding.etTitle.isEnabled = false
+                            binding.etContent.isEnabled = false
+                            binding.fabMode.isEnabled = false
+                            binding.fabFavorite.isEnabled = false
+                            binding.fabMore.isEnabled = false
+                        }
                         is EditorUiState.Saved  -> findNavController().popBackStack()
                         is EditorUiState.Error  -> {
                             binding.progressBar.visibility = View.GONE

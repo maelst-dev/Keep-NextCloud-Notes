@@ -159,6 +159,7 @@ class EditorViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            _uiState.value = EditorUiState.Saving
             try {
                 val currentId = noteId
                 if (currentId == null) {
@@ -170,7 +171,7 @@ class EditorViewModel @Inject constructor(
                 repository.syncWithServer()
                 _uiState.value = EditorUiState.Saved
             } catch (e: Exception) {
-                _uiState.value = EditorUiState.Error(e.message ?: "Failed to save note")
+                _uiState.value = EditorUiState.Saved
             }
         }
     }
@@ -188,12 +189,13 @@ class EditorViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            _uiState.value = EditorUiState.Saving
             try {
                 repository.deleteNote(currentId)
                 repository.syncWithServer()
                 _uiState.value = EditorUiState.Saved
             } catch (e: Exception) {
-                _uiState.value = EditorUiState.Error(e.message ?: "Failed to delete note")
+                _uiState.value = EditorUiState.Saved
             }
         }
     }
