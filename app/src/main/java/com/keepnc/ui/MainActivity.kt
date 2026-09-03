@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -18,7 +20,10 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.keepnc.R
+import com.keepnc.data.auth.BiometricAuthHelper
 import com.keepnc.data.auth.TokenStorage
+import com.keepnc.data.repository.NotesRepository
+import com.keepnc.data.settings.SettingsStorage
 import com.keepnc.databinding.ActivityMainBinding
 import com.keepnc.ui.auth.LoginActivity
 import com.keepnc.ui.notes.NotesFilter
@@ -26,7 +31,6 @@ import com.keepnc.ui.notes.NotesFragment
 import com.keepnc.ui.notes.NotesViewModel
 import androidx.fragment.app.viewModels
 import com.keepnc.work.SyncWorker
-import com.keepnc.data.repository.NotesRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -53,12 +57,25 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var repository: NotesRepository
 
+    @Inject
+    lateinit var settingsStorage: SettingsStorage
+
+    private var isAppLocked = false
+    private var isAuthenticatingBiometric = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        isAppLocked = savedInstanceState?.getBoolean(KEY_APP_LOCKED)
+            ?: (tokenStorage.isLoggedIn() && settingsStorage.isAppLockEnabled())
+
         setSupportActionBar(binding.toolbar)
+
+        binding.btnUnlock.setOnClickListener {
+            promptUnlock()
+        }
 
         setupNavigation()
         observeCategories()
@@ -83,6 +100,9 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             if (destination.id == R.id.notesFragment) {
                 updateToolbarTitle(currentFilter)
+                binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+            } else {
+                binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
             }
         }
 
@@ -98,6 +118,10 @@ class MainActivity : AppCompatActivity() {
                     showNotesWithFilter(NotesFilter.Favorites)
                     true
                 }
+                R.id.nav_settings -> {
+                    navigateToSettings()
+                    true
+                }
                 R.id.nav_logout -> {
                     showLogoutDialog()
                     true
@@ -109,6 +133,16 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
             }
+        }
+    }
+
+    private fun navigateToSettings() {
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+        val navController = navHostFragment?.navController ?: return
+        if (navController.currentDestination?.id != R.id.settingsFragment) {
+            navController.popBackStack(R.id.notesFragment, false)
+            navController.navigate(R.id.action_notesFragment_to_settingsFragment)
         }
     }
 
@@ -206,12 +240,66 @@ class MainActivity : AppCompatActivity() {
             // Clear local notes and stored credentials
             repository.clearAllLocalNotes()
             tokenStorage.clearCredentials()
+            isAppLocked = false
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
             // Go back to login screen
             startActivity(Intent(this@MainActivity, LoginActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             })
             finish()
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (tokenStorage.isLoggedIn() && settingsStorage.isAppLockEnabled()) {
+            if (isAppLocked) {
+                binding.layoutLockScreen.visibility = View.VISIBLE
+                window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                promptUnlock()
+            } else {
+                binding.layoutLockScreen.visibility = View.GONE
+                window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
+        } else {
+            isAppLocked = false
+            binding.layoutLockScreen.visibility = View.GONE
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (!isChangingConfigurations && !isAuthenticatingBiometric &&
+            tokenStorage.isLoggedIn() && settingsStorage.isAppLockEnabled()
+        ) {
+            isAppLocked = true
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_APP_LOCKED, isAppLocked)
+    }
+
+    private fun promptUnlock() {
+        if (!isAppLocked || isAuthenticatingBiometric) return
+        isAuthenticatingBiometric = true
+
+        BiometricAuthHelper.authenticate(
+            activity = this,
+            title = getString(R.string.auth_prompt_title),
+            subtitle = getString(R.string.auth_prompt_subtitle)
+        ) { success ->
+            isAuthenticatingBiometric = false
+            if (success) {
+                isAppLocked = false
+                binding.layoutLockScreen.visibility = View.GONE
+                window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            } else {
+                binding.layoutLockScreen.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -232,5 +320,9 @@ class MainActivity : AppCompatActivity() {
         //   - nested destination            → pops the back stack (goes back)
         return NavigationUI.navigateUp(navController, appBarConfiguration)
             || super.onSupportNavigateUp()
+    }
+
+    companion object {
+        private const val KEY_APP_LOCKED = "key_app_locked"
     }
 }

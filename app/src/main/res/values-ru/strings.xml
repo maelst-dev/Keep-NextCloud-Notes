@@ -78,4 +78,35 @@
     <string name="cd_new_note">Создать заметку</string>
     <string name="cd_pinned">Закреплена</string>
     <string name="cd_unsynced">Несинхронизированные изменения</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_section_notes">Заметки и редактор</string>
+    <string name="settings_confirm_save_title">Подтверждение сохранения</string>
+    <string name="settings_confirm_save_desc">Запрашивать подтверждение при выходе из редактора. Если отключено, изменения сохраняются автоматически.</string>
+    <string name="settings_confirm_delete_title">Подтверждение удаления</string>
+    <string name="settings_confirm_delete_desc">Запрашивать подтверждение перед удалением заметки.</string>
+    <string name="settings_editor_font_size_title">Размер шрифта в редакторе</string>
+    <string name="settings_card_font_size_title">Размер шрифта карточек</string>
+    <string name="font_size_small">Маленький</string>
+    <string name="font_size_medium">Обычный</string>
+    <string name="font_size_large">Большой</string>
+    <string name="font_size_extra_large">Очень большой</string>
+
+    <!-- Security -->
+    <string name="settings_section_security">Безопасность</string>
+    <string name="settings_app_lock_title">Блокировка приложения</string>
+    <string name="settings_app_lock_desc">Запрашивать отпечаток пальца, распознавание лица или PIN-код при входе</string>
+    <string name="auth_prompt_title">Разблокировка KeepNotes</string>
+    <string name="auth_prompt_subtitle">Подтвердите личность для продолжения</string>
+    <string name="auth_enable_prompt_title">Включение блокировки</string>
+    <string name="auth_disable_prompt_title">Отключение блокировки</string>
+    <string name="auth_error_no_credentials">Сначала настройте блокировку экрана (PIN-код, графический ключ или отпечаток) в настройках телефона.</string>
+    <string name="app_locked_subtitle">Приложение заблокировано</string>
+    <string name="action_unlock">Разблокировать</string>
+    <string name="cd_app_locked">Приложение заблокировано</string>
+
+    <string name="settings_section_about">О приложении</string>
+    <string name="settings_app_version">Версия %1$s</string>
+    <string name="settings_server_url">Подключённый сервер</string>
 </resources>

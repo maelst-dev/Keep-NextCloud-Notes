@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.keepnc.R
+import com.keepnc.data.settings.SettingsStorage
 import com.keepnc.databinding.FragmentNotesBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * The main notes list screen — a staggered 2-column grid of note cards.
@@ -45,6 +47,9 @@ class NotesFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: NotesViewModel by viewModels()
+
+    @Inject
+    lateinit var settingsStorage: SettingsStorage
 
     private lateinit var adapter: NoteCardAdapter
 
@@ -86,6 +91,7 @@ class NotesFragment : Fragment() {
         applyArgumentFilter()
         observeUiState()
         observeSyncState()
+        observeCardFontSize()
         setupSearchDebounce()
         setupMenu()
     }
@@ -101,7 +107,8 @@ class NotesFragment : Fragment() {
             onNoteLongClick = { note ->
                 showDeleteDialog(note.id, note.title)
                 true
-            }
+            },
+            cardFontSize = settingsStorage.getCardFontSize()
         )
 
         binding.recyclerView.layoutManager = StaggeredGridLayoutManager(
@@ -186,6 +193,19 @@ class NotesFragment : Fragment() {
         }
     }
 
+    private fun observeCardFontSize() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                settingsStorage.cardFontSize.collect { preset ->
+                    if (adapter.cardFontSize != preset) {
+                        adapter.cardFontSize = preset
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+            }
+        }
+    }
+
     @OptIn(FlowPreview::class)
     private fun setupSearchDebounce() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -236,14 +256,18 @@ class NotesFragment : Fragment() {
     }
 
     private fun showDeleteDialog(noteId: Long, title: String) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.delete_note_title)
-            .setMessage(R.string.delete_note_message)
-            .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.confirm) { _, _ ->
-                viewModel.deleteNote(noteId)
-            }
-            .show()
+        if (settingsStorage.isConfirmDeleteNote()) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.delete_note_title)
+                .setMessage(R.string.delete_note_message)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.confirm) { _, _ ->
+                    viewModel.deleteNote(noteId)
+                }
+                .show()
+        } else {
+            viewModel.deleteNote(noteId)
+        }
     }
 
     private fun getEmptyMessage(): String {

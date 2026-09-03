@@ -7,6 +7,7 @@ import android.text.Selection
 import android.text.Spannable
 import android.text.Spanned
 import android.text.style.LeadingMarginSpan
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -28,10 +29,12 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.keepnc.R
+import com.keepnc.data.settings.SettingsStorage
 import com.keepnc.databinding.FragmentEditorBinding
 import com.keepnc.ui.MarkwonFactory
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Note editor screen.
@@ -60,6 +63,9 @@ class EditorFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: EditorViewModel by viewModels()
+
+    @Inject
+    lateinit var settingsStorage: SettingsStorage
 
     private var fieldsPopulated = false
     private var isPreviewMode = false
@@ -97,6 +103,7 @@ class EditorFragment : Fragment() {
         observeFavorite()
         observeFieldsOnce()
         setupBackHandler()
+        applyFontSize()
     }
 
     // =========================================================================
@@ -242,14 +249,18 @@ class EditorFragment : Fragment() {
     }
 
     private fun showDeleteConfirmationDialog() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.delete_note_title)
-            .setMessage(R.string.delete_note_message)
-            .setPositiveButton(R.string.action_delete) { _, _ ->
-                viewModel.deleteNote()
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        if (settingsStorage.isConfirmDeleteNote()) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.delete_note_title)
+                .setMessage(R.string.delete_note_message)
+                .setPositiveButton(R.string.action_delete) { _, _ ->
+                    viewModel.deleteNote()
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+        } else {
+            viewModel.deleteNote()
+        }
     }
 
     // =========================================================================
@@ -349,10 +360,17 @@ class EditorFragment : Fragment() {
     private var touchDownX = 0f
     private var touchDownY = 0f
 
+    private fun applyFontSize() {
+        val fontSize = settingsStorage.getEditorFontSize()
+        binding.etContent.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize.editorContentSp)
+        binding.tvPreview.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize.editorContentSp)
+    }
+
     private fun renderMarkdownWithLargeCheckboxes(content: String) {
         val formattedContent = MarkwonFactory.formatChecklistStrikethrough(content)
+        val fontSize = settingsStorage.getEditorFontSize()
 
-        val markwon = MarkwonFactory.createForEditor(requireContext())
+        val markwon = MarkwonFactory.createForEditor(requireContext(), fontSize.editorCheckboxDp)
         markwon.setMarkdown(binding.tvPreview, formattedContent)
 
         val touchSlop = ViewConfiguration.get(requireContext()).scaledTouchSlop
@@ -669,22 +687,32 @@ class EditorFragment : Fragment() {
         val currentFavorite = viewModel.isFavorite.value
 
         if (viewModel.hasChanges(currentTitle, currentContent, currentCategory, currentFavorite)) {
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.save_changes_title)
-                .setMessage(R.string.save_changes_message)
-                .setPositiveButton(R.string.action_save) { _, _ ->
-                    viewModel.saveNote(
-                        titleText = currentTitle,
-                        contentText = currentContent,
-                        categoryText = currentCategory,
-                        favorite = currentFavorite
-                    )
-                }
-                .setNegativeButton(R.string.action_discard) { _, _ ->
-                    findNavController().popBackStack()
-                }
-                .setNeutralButton(R.string.cancel, null)
-                .show()
+            if (settingsStorage.isConfirmSaveOnExit()) {
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.save_changes_title)
+                    .setMessage(R.string.save_changes_message)
+                    .setPositiveButton(R.string.action_save) { _, _ ->
+                        viewModel.saveNote(
+                            titleText = currentTitle,
+                            contentText = currentContent,
+                            categoryText = currentCategory,
+                            favorite = currentFavorite
+                        )
+                    }
+                    .setNegativeButton(R.string.action_discard) { _, _ ->
+                        findNavController().popBackStack()
+                    }
+                    .setNeutralButton(R.string.cancel, null)
+                    .show()
+            } else {
+                // Auto-save changes without confirmation
+                viewModel.saveNote(
+                    titleText = currentTitle,
+                    contentText = currentContent,
+                    categoryText = currentCategory,
+                    favorite = currentFavorite
+                )
+            }
         } else {
             findNavController().popBackStack()
         }

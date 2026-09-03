@@ -1,5 +1,6 @@
 package com.keepnc.ui.notes
 
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.keepnc.R
 import com.keepnc.data.local.NoteEntity
 import com.keepnc.data.local.SyncStatus
+import com.keepnc.data.settings.FontSizePreset
 import com.keepnc.databinding.ItemNoteCardBinding
 import com.keepnc.ui.MarkwonFactory
 
@@ -23,10 +25,12 @@ import com.keepnc.ui.MarkwonFactory
  *
  * @param onNoteClick     Invoked when the user taps a card
  * @param onNoteLongClick Invoked on long-press; return true to consume the event
+ * @param cardFontSize    Font size preset for card title and content
  */
 class NoteCardAdapter(
     private val onNoteClick: (NoteEntity) -> Unit,
-    private val onNoteLongClick: (NoteEntity) -> Boolean
+    private val onNoteLongClick: (NoteEntity) -> Boolean,
+    var cardFontSize: FontSizePreset = FontSizePreset.DEFAULT
 ) : ListAdapter<NoteEntity, NoteCardAdapter.NoteViewHolder>(DiffCallback) {
 
     // -----------------------------------------------------------------------
@@ -40,6 +44,10 @@ class NoteCardAdapter(
         private val markwon by lazy { MarkwonFactory.createForCard(binding.root.context) }
 
         fun bind(note: NoteEntity) {
+            // Apply card font size
+            binding.tvTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, cardFontSize.cardTitleSp)
+            binding.tvContent.setTextSize(TypedValue.COMPLEX_UNIT_SP, cardFontSize.cardContentSp)
+
             // Title — hide when blank so the card looks cleaner
             if (note.title.isBlank()) {
                 binding.tvTitle.visibility = View.GONE

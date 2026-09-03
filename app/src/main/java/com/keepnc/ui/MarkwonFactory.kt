@@ -21,18 +21,19 @@ import org.commonmark.node.SoftLineBreak
 object MarkwonFactory {
 
     /** Creates Markwon instance for the note editor with dynamic auto-centering checkboxes. */
-    fun createForEditor(context: Context): Markwon {
+    fun createForEditor(context: Context, checkboxSizeDp: Float = 16f): Markwon {
         val density = context.resources.displayMetrics.density
+        val totalMarginDp = checkboxSizeDp + 16f
         return Markwon.builder(context)
             .usePlugin(StrikethroughPlugin.create())
             .usePlugin(TablePlugin.create(context))
-            .usePlugin(TaskListPlugin.create(LargeTaskCheckboxDrawable(context, 16f)))
+            .usePlugin(TaskListPlugin.create(LargeTaskCheckboxDrawable(context, checkboxSizeDp)))
             .usePlugin(LinkifyPlugin.create())
             .usePlugin(object : AbstractMarkwonPlugin() {
                 override fun configureTheme(builder: MarkwonTheme.Builder) {
                     // blockMargin sets the indentation before list text:
-                    // 32dp total - 16dp checkbox = 16dp clean gap between checkbox and text
-                    builder.blockMargin((32f * density).toInt())
+                    // totalMarginDp - checkboxSizeDp = 16dp clean gap between checkbox and text
+                    builder.blockMargin((totalMarginDp * density).toInt())
                 }
 
                 override fun configureVisitor(builder: MarkwonVisitor.Builder) {

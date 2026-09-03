@@ -78,4 +78,35 @@
     <string name="cd_new_note">Create note</string>
     <string name="cd_pinned">Pinned</string>
     <string name="cd_unsynced">Unsynced changes</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_notes">Notes &amp; Editor</string>
+    <string name="settings_confirm_save_title">Save confirmation</string>
+    <string name="settings_confirm_save_desc">Ask to save changes when exiting the editor. If disabled, changes are saved automatically.</string>
+    <string name="settings_confirm_delete_title">Delete confirmation</string>
+    <string name="settings_confirm_delete_desc">Ask for confirmation before deleting a note.</string>
+    <string name="settings_editor_font_size_title">Editor font size</string>
+    <string name="settings_card_font_size_title">Cards font size</string>
+    <string name="font_size_small">Small</string>
+    <string name="font_size_medium">Normal</string>
+    <string name="font_size_large">Large</string>
+    <string name="font_size_extra_large">Huge</string>
+
+    <!-- Security -->
+    <string name="settings_section_security">Security</string>
+    <string name="settings_app_lock_title">App lock</string>
+    <string name="settings_app_lock_desc">Require fingerprint, face or PIN when opening the app</string>
+    <string name="auth_prompt_title">Unlock KeepNotes</string>
+    <string name="auth_prompt_subtitle">Confirm your identity to continue</string>
+    <string name="auth_enable_prompt_title">Enable App Lock</string>
+    <string name="auth_disable_prompt_title">Disable App Lock</string>
+    <string name="auth_error_no_credentials">Set up a screen lock (PIN, pattern, or fingerprint) in your device settings first.</string>
+    <string name="app_locked_subtitle">App is locked</string>
+    <string name="action_unlock">Unlock</string>
+    <string name="cd_app_locked">App locked</string>
+
+    <string name="settings_section_about">About</string>
+    <string name="settings_app_version">Version %1$s</string>
+    <string name="settings_server_url">Connected server</string>
 </resources>

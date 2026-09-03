@@ -96,6 +96,9 @@ dependencies {
     // EncryptedSharedPreferences (secure token storage)
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
+    // Biometric & Device Credentials authentication (AOSP / F-Droid compatible)
+    implementation("androidx.biometric:biometric:1.1.0")
+
     // WorkManager (background sync)
     implementation("androidx.work:work-runtime-ktx:2.10.1")
 
