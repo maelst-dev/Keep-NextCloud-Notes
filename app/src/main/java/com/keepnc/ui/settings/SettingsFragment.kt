@@ -12,6 +12,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.keepnc.R
 import com.keepnc.data.auth.BiometricAuthHelper
+import com.keepnc.data.settings.AppLanguage
 import com.keepnc.data.settings.FontSizePreset
 import com.keepnc.databinding.FragmentSettingsBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,6 +43,7 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupClickListeners()
+        setupLanguageInfo()
         setupAboutInfo()
         observePreferences()
     }
@@ -71,6 +73,10 @@ class SettingsFragment : Fragment() {
             ) { selectedPreset ->
                 viewModel.setCardFontSize(selectedPreset)
             }
+        }
+
+        binding.rowAppLanguage.setOnClickListener {
+            showLanguageDialog()
         }
 
         binding.rowAppLock.setOnClickListener {
@@ -124,6 +130,29 @@ class SettingsFragment : Fragment() {
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
+    }
+
+    private fun showLanguageDialog() {
+        val languages = AppLanguage.entries.toTypedArray()
+        val items = languages.map { getString(it.labelRes) }.toTypedArray()
+        val current = viewModel.currentLanguage
+        val checkedItem = languages.indexOf(current).coerceAtLeast(0)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings_language_title)
+            .setSingleChoiceItems(items, checkedItem) { dialog, which ->
+                val selected = languages[which]
+                if (selected != current) {
+                    viewModel.setLanguage(selected)
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun setupLanguageInfo() {
+        binding.tvAppLanguageValue.text = getString(viewModel.currentLanguage.labelRes)
     }
 
     private fun setupAboutInfo() {

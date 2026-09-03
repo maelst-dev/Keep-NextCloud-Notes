@@ -93,6 +93,12 @@
     <string name="font_size_large">Большой</string>
     <string name="font_size_extra_large">Очень большой</string>
 
+    <!-- Language -->
+    <string name="settings_language_title">Язык приложения</string>
+    <string name="language_system">Системный (по умолчанию)</string>
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+
     <!-- Security -->
     <string name="settings_section_security">Безопасность</string>
     <string name="settings_app_lock_title">Блокировка приложения</string>

@@ -93,6 +93,12 @@
     <string name="font_size_large">Large</string>
     <string name="font_size_extra_large">Huge</string>
 
+    <!-- Language -->
+    <string name="settings_language_title">App language</string>
+    <string name="language_system">System default</string>
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+
     <!-- Security -->
     <string name="settings_section_security">Security</string>
     <string name="settings_app_lock_title">App lock</string>

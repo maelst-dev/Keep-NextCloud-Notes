@@ -3,6 +3,7 @@ package com.keepnc.ui.settings
 import androidx.lifecycle.ViewModel
 import com.keepnc.BuildConfig
 import com.keepnc.data.auth.TokenStorage
+import com.keepnc.data.settings.AppLanguage
 import com.keepnc.data.settings.FontSizePreset
 import com.keepnc.data.settings.SettingsStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,5 +51,12 @@ class SettingsViewModel @Inject constructor(
 
     fun setAppLockEnabled(enabled: Boolean) {
         settingsStorage.setAppLockEnabled(enabled)
+    }
+
+    val currentLanguage: AppLanguage
+        get() = AppLanguage.getCurrent()
+
+    fun setLanguage(language: AppLanguage) {
+        AppLanguage.apply(language)
     }
 }
