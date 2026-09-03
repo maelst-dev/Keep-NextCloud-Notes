@@ -7,19 +7,6 @@ SourceCode: https://github.com/maelst-dev/KeepNotes-for-Nextcloud
 IssueTracker: https://github.com/maelst-dev/KeepNotes-for-Nextcloud/issues
 
 AutoName: KeepNotes for Nextcloud
-Summary: Google Keep-inspired client for Nextcloud Notes
-Description: |-
-  KeepNotes for Nextcloud is a modern, lightweight client for Nextcloud Notes
-  with a Google Keep-inspired user interface.
-
-  Features:
-  * Staggered note grid with Material 3 dynamic theming
-  * Offline-first local database (Room) with bidirectional sync
-  * Nextcloud Login Flow v2 (one-click browser login)
-  * Rich Markdown rendering and interactive checklists
-  * Biometric app lock (fingerprint / PIN)
-  * Categories and Starred / Favorites filters
-  * Configurable font sizes and in-app language switching
 
 RepoType: git
 Repo: https://github.com/maelst-dev/KeepNotes-for-Nextcloud.git
